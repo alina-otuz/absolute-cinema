@@ -1,0 +1,41 @@
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
+function signToken(user) {
+  return jwt.sign(
+    { sub: user._id.toString(), role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+  );
+}
+
+export async function register(req, res, next) {
+  try {
+    const { username, email, password } = req.body;
+
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(409).json({ message: "Email already in use" });
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({ username, email, passwordHash });
+
+    const token = signToken(user);
+    res.status(201).json({ token, user: { id: user._id, username, email, role: user.role } });
+  } catch (e) { next(e); }
+}
+
+export async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+
+    const token = signToken(user);
+    res.json({ token, user: { id: user._id, username: user.username, email, role: user.role } });
+  } catch (e) { next(e); }
+}
