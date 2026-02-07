@@ -20,9 +20,13 @@ export async function updateProfile(req, res, next) {
 
     if (password) updates.passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true })
-      .select("_id username email role");
+    const user = await User.findByIdAndUpdate(req.user._id, updates, {
+      new: true,
+      runValidators: true
+    }).select("_id username email role");
 
     res.json({ user });
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 }
