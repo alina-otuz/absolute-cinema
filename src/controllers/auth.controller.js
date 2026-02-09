@@ -6,7 +6,7 @@ function signToken(user) {
   return jwt.sign(
     { sub: user._id.toString(), role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+    { expiresIn: "7d" }
   );
 }
 
@@ -18,17 +18,13 @@ export async function register(req, res, next) {
     if (exists) return res.status(409).json({ message: "Email already in use" });
 
     const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({ username, email, passwordHash });
 
-    const user = await User.create({ username, email, passwordHash, role: "user" });
-
-    const token = signToken(user);
-    return res.status(201).json({
-      token,
-      user: { id: user._id, username: user.username, email: user.email, role: user.role },
+    res.status(201).json({
+      token: signToken(user),
+      user: { id: user._id, username: user.username, email: user.email, role: user.role }
     });
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 }
 
 export async function login(req, res, next) {
@@ -41,12 +37,9 @@ export async function login(req, res, next) {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = signToken(user);
-    return res.json({
-      token,
-      user: { id: user._id, username: user.username, email: user.email, role: user.role },
+    res.json({
+      token: signToken(user),
+      user: { id: user._id, username: user.username, email: user.email, role: user.role }
     });
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 }

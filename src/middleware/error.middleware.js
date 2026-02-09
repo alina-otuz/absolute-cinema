@@ -1,10 +1,9 @@
 export function errorHandler(err, req, res, next) {
   console.error(err);
 
-  // Mongoose duplicate key (email unique)
   if (err?.code === 11000) {
     return res.status(409).json({ message: "Duplicate key", details: err.keyValue });
   }
 
-  return res.status(500).json({ message: "Internal server error" });
+  res.status(500).json({ message: "Internal server error" });
 }
