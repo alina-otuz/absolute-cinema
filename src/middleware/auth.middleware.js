@@ -7,17 +7,16 @@ export async function requireAuth(req, res, next) {
     const [type, token] = header.split(" ");
 
     if (type !== "Bearer" || !token) {
-      return res.status(401).json({ message: "Missing/invalid Authorization header" });
+      return res.status(401).json({ message: "Missing or invalid Authorization header" });
     }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-
     const user = await User.findById(payload.sub).select("_id username email role");
     if (!user) return res.status(401).json({ message: "User not found" });
 
     req.user = user;
     next();
-  } catch {
-    res.status(401).json({ message: "Invalid or expired token" });
+  } catch (e) {
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 }
