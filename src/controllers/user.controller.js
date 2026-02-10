@@ -1,15 +1,15 @@
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 
-export async function getProfile(req, res) {
+export function getProfile(req, res) {
   res.json({ user: req.user });
 }
 
 export async function updateProfile(req, res, next) {
   try {
     const { username, email, password } = req.body;
-
     const updates = {};
+
     if (username) updates.username = username;
 
     if (email) {
@@ -20,13 +20,9 @@ export async function updateProfile(req, res, next) {
 
     if (password) updates.passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates, {
-      new: true,
-      runValidators: true
-    }).select("_id username email role");
+    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true })
+      .select("_id username email role");
 
     res.json({ user });
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 }

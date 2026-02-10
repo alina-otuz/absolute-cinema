@@ -1,10 +1,16 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth.middleware.js";
-import { validate } from "../middleware/validate.middleware.js";
-import { updateProfileSchema } from "../validation/user.schemas.js";
+import Joi from "joi";
+import { requireAuth } from "../middleware/auth.js";
+import { validate } from "../middleware/validate.js";
 import { getProfile, updateProfile } from "../controllers/user.controller.js";
 
 const router = Router();
+
+const updateProfileSchema = Joi.object({
+  username: Joi.string().min(2).max(40),
+  email: Joi.string().email(),
+  password: Joi.string().min(8).max(72)
+}).min(1);
 
 router.get("/profile", requireAuth, getProfile);
 router.put("/profile", requireAuth, validate(updateProfileSchema), updateProfile);
