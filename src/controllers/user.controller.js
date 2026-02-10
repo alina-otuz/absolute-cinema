@@ -8,11 +8,6 @@ export async function getProfile(req, res) {
 export async function updateProfile(req, res, next) {
   try {
     const { username, email, password } = req.body;
-<<<<<<< HEAD
-=======
-
-    const updates = {};
->>>>>>> 7099a4f (Auth, user management and JWT security implemented)
 
     const updates = {};
     if (username) updates.username = username;
