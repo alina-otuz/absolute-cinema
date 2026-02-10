@@ -8,6 +8,11 @@ export async function getProfile(req, res) {
 export async function updateProfile(req, res, next) {
   try {
     const { username, email, password } = req.body;
+<<<<<<< HEAD
+=======
+
+    const updates = {};
+>>>>>>> 7099a4f (Auth, user management and JWT security implemented)
 
     const updates = {};
     if (username) updates.username = username;
@@ -18,7 +23,9 @@ export async function updateProfile(req, res, next) {
       updates.email = email;
     }
 
-    if (password) updates.passwordHash = await bcrypt.hash(password, 12);
+    if (password) {
+      updates.passwordHash = await bcrypt.hash(password, 12);
+    }
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, {
       new: true,
