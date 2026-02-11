@@ -59,9 +59,6 @@ app.use((req, res) => res.status(404).json({ message: "Not found" }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// API routes выше
-app.use("/api", apiRoutes);
-
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 app.get("*", (req, res) => {
