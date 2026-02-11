@@ -12,6 +12,8 @@ import bookingRoutes from "./routes/booking.routes.js";
 import movieRoutes from "./routes/movie.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
@@ -50,10 +52,20 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/reviews", reviewRoutes);
 
+
 // 404 after routes
 app.use((req, res) => res.status(404).json({ message: "Not found" }));
 
-// Error handler last
-app.use(errorHandler);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// API routes выше
+app.use("/api", apiRoutes);
+
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
 
 export default app;
