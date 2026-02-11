@@ -1,48 +1,46 @@
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: "/api",
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    "Content-Type": "application/json"
+  },
+  withCredentials: true
+});
 
-// Add token to requests
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('accessToken')
+  const token = localStorage.getItem("accessToken");
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return config
-})
+  return config;
+});
 
-// Handle token refresh
 api.interceptors.response.use(
-  response => response,
+  res => res,
   async error => {
-    const originalRequest = error.config
+    const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-      const refreshToken = localStorage.getItem('refreshToken')
-      
+      originalRequest._retry = true;
+
       try {
-        const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken })
-        const { accessToken } = response.data
-        localStorage.setItem('accessToken', accessToken)
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`
-        return api(originalRequest)
-      } catch (err) {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
+        const { data } = await api.post("/auth/refresh", {
+          refreshToken: localStorage.getItem("refreshToken")
+        });
+
+        localStorage.setItem("accessToken", data.accessToken);
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+
+        return api(originalRequest);
+      } catch {
+        localStorage.clear();
+        window.location.href = "/login";
       }
     }
 
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default api
+export default api;
