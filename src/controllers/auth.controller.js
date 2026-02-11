@@ -2,7 +2,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+function ensureJwtSecret() {
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is missing in .env");
+}
+
 function signAccessToken(user) {
+  ensureJwtSecret();
   return jwt.sign(
     { sub: user._id.toString(), role: user.role },
     process.env.JWT_SECRET,
@@ -11,6 +16,7 @@ function signAccessToken(user) {
 }
 
 function signRefreshToken(user) {
+  ensureJwtSecret();
   return jwt.sign(
     { sub: user._id.toString(), role: user.role },
     process.env.JWT_SECRET,
@@ -31,7 +37,7 @@ export async function register(req, res, next) {
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
 
-    res.status(201).json({
+    return res.status(201).json({
       accessToken,
       refreshToken,
       user: { id: user._id, username: user.username, email: user.email, role: user.role }
@@ -54,7 +60,7 @@ export async function login(req, res, next) {
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
 
-    res.json({
+    return res.json({
       accessToken,
       refreshToken,
       user: { id: user._id, username: user.username, email: user.email, role: user.role }
@@ -67,20 +73,21 @@ export async function login(req, res, next) {
 // POST /api/auth/refresh
 export function refresh(req, res) {
   try {
+    ensureJwtSecret();
+
     const { refreshToken } = req.body;
     if (!refreshToken) return res.status(400).json({ message: "Refresh token required" });
 
     const payload = jwt.verify(refreshToken, process.env.JWT_SECRET);
 
-    // выдаём НОВЫЙ access token (короткий)
     const accessToken = jwt.sign(
       { sub: payload.sub, role: payload.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m" }
     );
 
-    res.json({ accessToken });
-  } catch {
-    res.status(401).json({ message: "Invalid or expired refresh token" });
+    return res.json({ accessToken });
+  } catch (e) {
+    return res.status(401).json({ message: "Invalid or expired refresh token" });
   }
 }

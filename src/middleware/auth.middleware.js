@@ -10,6 +10,10 @@ export async function requireAuth(req, res, next) {
       return res.status(401).json({ message: "Missing/invalid Authorization header" });
     }
 
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ message: "Server misconfigured: JWT_SECRET missing" });
+    }
+
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(payload.sub).select("_id username email role");

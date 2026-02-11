@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import User from "../models/User.js";
 
 export async function getProfile(req, res) {
-  res.json({ user: req.user });
+  res.json(req.user);
 }
 
 export async function updateProfile(req, res, next) {
@@ -18,14 +18,16 @@ export async function updateProfile(req, res, next) {
       updates.email = email;
     }
 
-    if (password) updates.passwordHash = await bcrypt.hash(password, 12);
+    if (password) {
+      updates.passwordHash = await bcrypt.hash(password, 12);
+    }
 
     const user = await User.findByIdAndUpdate(req.user._id, updates, {
       new: true,
       runValidators: true
     }).select("_id username email role");
 
-    res.json({ user });
+    res.json(user);
   } catch (e) {
     next(e);
   }
