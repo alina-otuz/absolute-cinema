@@ -17,7 +17,23 @@ import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
 
 // ---------- security ----------
-app.use(helmet());
+const isDev = process.env.NODE_ENV !== "production";
+const connectSrcs = ["'self'"];
+
+if (isDev) {
+  connectSrcs.push("http://localhost:3001", "http://localhost:5173", "ws://localhost:5173");
+}
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: connectSrcs
+      }
+    }
+  })
+);
 
 app.use(
   rateLimit({
@@ -64,6 +80,7 @@ app.use(express.static(path.join(__dirname, "../frontend/dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
+
 
 
 app.use(errorHandler);
