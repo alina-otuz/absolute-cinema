@@ -6,7 +6,7 @@ const port = process.env.PORT || 3001;
 
 connectDB()
   .then(() => {
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0', () => {
       console.log(`API running on :${port}`);
     });
   })
