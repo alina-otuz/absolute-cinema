@@ -9,7 +9,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev -w frontend\"",
-    "start:all": "concurrently \"npm start\" \"npm run build -w frontend && npm run preview -w frontend\""
+    "build": "npm run build -w frontend",
+    "deploy": "node deploy.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
