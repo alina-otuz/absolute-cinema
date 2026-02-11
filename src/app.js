@@ -30,9 +30,10 @@ app.use(
 
 app.use(express.json());
 
+const corsOrigins = (process.env.CORS_ORIGIN || "").split(",").map(o => o.trim()).filter(Boolean);
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: corsOrigins.length > 0 ? corsOrigins : "*",
     credentials: true
   })
 );
