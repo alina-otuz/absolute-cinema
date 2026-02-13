@@ -29,6 +29,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
+        imgSrc: ["'self'", "https:", "data:"],
         connectSrc: connectSrcs
       }
     }
